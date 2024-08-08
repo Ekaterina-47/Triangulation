@@ -57,18 +57,17 @@ def delaunay_triangulation(nodes):
 
     # Шаг 1: Инициализация. Создание начальной триангуляции с помощью треугольника, охватывающего все точки
     super_triangle = create_super_triangle(nodes)
+
     triangles = [super_triangle]     # начальный список треугольников содержит объект супертреугольника
     plot_triangulation(triangles, "Проверка созданной суперструктуры")
 
     print("Супертреугольник: {}".format(super_triangle))
     print("Начальная триангуляция: {}".format(triangles))
-
     # Шаг 2: Поочерёдное добавление узлов в триангуляцию
     for node in nodes:
         # a) Локализация: найти треугольник, в который попадает данный узел, или ближайший треугольник на границе триангуляции
-
-        point_localization = hitting_the_triangle(node, triangles)    # FIXME Исправить локализацию: определить треугольник и ребро
-        # если попала на ребро - вернёт ребро
+        point_localization = hitting_the_triangle(node, triangles)
+        # если попала на ребро - вернёт список: ребро и соседние к ребру треугольники
         # если в центр треугольника - вернёт этот треугольник
 
         # б) Обработка узла:
@@ -139,7 +138,6 @@ def delaunay_triangulation(nodes):
 #                                    print("флип")
 #                                    break
 
-
                 triangles.remove(triangle1)
                 if len(point_localization) == 3:
                     triangles.remove(triangle2)
@@ -151,46 +149,83 @@ def delaunay_triangulation(nodes):
             #    triangles.append(new_triangle2)
 
 
-                # Если узел попадает внутрь треугольника
+        # Если узел попадает внутрь треугольника
         if isinstance(point_localization, Triangle):
             print("Точка попала внутрь треугольника")
             triangle = point_localization
-
             plot_triangulation(triangles, "Точка попала внутрь треугольника")
+
+            # Надо сразу удалить этот треугольник из триангуляции и освободить рёбра от связи с ним
+            # Удаление старого треугольника
+            triangles.remove(triangle)
+            plot_triangulation(triangles, "Удалён старый треугольник, который разделён на 3")
+            # Удаление этого треугольника у всех его рёбер
+            for edge in triangle.edges:
+                edge.delete_triangle(triangle)
 
             # Разделение треугольника на три новых
             new_triangle1 = Triangle(triangle.nodes[0], triangle.nodes[1], node)
             new_triangle2 = Triangle(triangle.nodes[1], triangle.nodes[2], node)
             new_triangle3 = Triangle(triangle.nodes[2], triangle.nodes[0], node)
 
-            # Установка соседних треугольников между новыми треугольниками
-            new_triangle1.neighboring_triangles = [new_triangle2, new_triangle3, None]
-            new_triangle2.neighboring_triangles = [new_triangle3, new_triangle1, None]
-            new_triangle3.neighboring_triangles = [new_triangle1, new_triangle2, None]
+            # Добавление соседей для новых треугольников, по паре для каждого
+            new_triangle1.add_neighbour(new_triangle2, new_triangle3)
+            new_triangle2.add_neighbour(new_triangle3, new_triangle1)
+            new_triangle3.add_neighbour(new_triangle2, new_triangle1)
 
-            # Удаление старого треугольника
-            triangles.remove(triangle)
-            plot_triangulation(triangles, "Удалён старый треугольник, который разделён на 3")
+            # Третий соседний треугольник для каждого нового вычисляется отдельно,
+            # если это не первая итерация с суперструктурой
+            if len(triangles) > 1:
+                for new_triangle in [new_triangle1, new_triangle2, new_triangle3]:
+                    # Для ребра из списка рёбер нового треугольника
+                    for edge in new_triangle.edges:
+                        # Если оно не равно рёбрам у соседних новых треугольников
+                        if edge.triangles != new_triangle.neighboring_triangles[0] and edge.triangles != new_triangle.neighboring_triangles[1]:
+                            # И если у него больше, чем 1 сосед
+                            if len(edge.triangles) > 1:
+                                for triangle_neighbour in edge.triangles:
+                                    # То помимо исследуемого треугольника
+                                    if triangle_neighbour != new_triangle:
+                                        # Третьим соседним будет тот, что принадлежит этому ребру
+                                        new_triangle.add_neighbour(triangle_neighbour)
+                                        break
+                        break
+
+
+# ---------------------------------------------------------------------------------------
+            # На этом моменте для каждого нового треугольника установлены все соседние треугольники
+            # Каждое ребро соотнесено с 2-мя треугольникам или 1-м, если оно граничное
+            # Тот треугольник, который делился, удалён с триангуляции
+# ---------------------------------------------------------------------------------------
+
+
+
+
+            # Проверка условия Делоне для каждого нового треугольника и точки соседнего треугольника
+          #  for triangle in [new_triangle1, new_triangle2, new_triangle3]:
+          #      for neighbour in triangle.neighboring_triangles:
+          #          for point in neighbour.nodes:
+          #              if point not in triangle.nodes:
+          #                  # проверка
+          #                  if delaunay_condition(triangle.nodes[0], triangle.nodes[1], triangle.nodes[2], point):
+          #                      pass
+
+
+
+
+       #     triangles.extend([new_triangle1, new_triangle2, new_triangle3])
+       #     plot_triangulation(triangles, "Установнено три новых треугольника")
 
 
                 # Проверка выполнения условия Делоне
-            for new_triangle in [new_triangle1, new_triangle2, new_triangle3]:
-                if len(triangles) == 0:
-                    break
-                for neighbour in new_triangle.neighboring_triangles:
-                    if neighbour:
-                        for point in range(len(neighbour.nodes)):
-                            if delaunay_condition(new_triangle.nodes[0], new_triangle.nodes[1], new_triangle.nodes[2], neighbour.nodes[point]):
-                                plot_triangulation(triangles, "Делоне выполняется")
-                                print("Выполняется")
-                            else:
-                                new_triangle, neighbour = flip_edge(new_triangle, neighbour)
-                                plot_triangulation(triangles, "Делоне не выполняется, производится флип")
-                                print("Флип")
-                                continue
+  #          for new_triangle in [new_triangle1, new_triangle2, new_triangle3]:
+  #              if len(triangles) == 3:
+  #                  break
 
+
+            # После проверки условия Делоне и преобразований новые треугольники вставляются в триангуляцию
             triangles.extend([new_triangle1, new_triangle2, new_triangle3])
-            plot_triangulation(triangles, "Установнено три новых треугольника")
+            plot_triangulation(triangles, "Установлено три новых треугольника")
 
             #break
     plot_triangulation(triangles, "Итоговая триангуляция с суперструктурой")
@@ -225,7 +260,7 @@ print(random_points)
 
 triangles = delaunay_triangulation(random_points)
 
-print("Количество итоговых треугольников: {}".format(num))
+print("Количество итоговых треугольников: {}".format(len(triangles)))
 print("\n Треугольники в финальной триангуляции:\n{}".format(triangles))
 plot_triangulation(triangles, "Финальная триангуляция")
 

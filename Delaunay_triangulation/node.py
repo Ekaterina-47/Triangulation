@@ -5,5 +5,9 @@ class Node:
         self.x = x
         self.y = y
 
+    def __lt__(self, other):
+        """Сравнение узлов для нормализации рёбер"""
+        return (self.x, self.y) < (other.x, other.y)
+
     def __repr__(self):
-        return "Узел ({}, {})".format(self.x, self.y)
+        return "({}, {})".format(self.x, self.y)
