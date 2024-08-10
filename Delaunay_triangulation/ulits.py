@@ -9,7 +9,7 @@ from edge import Edge
 # Вспомогательные функции
 
 # Функция для создания суперструктуры в форме треугольника
-def create_super_triangle(nodes, magnification_factor=4):
+def create_super_triangle(nodes, magnification_factor=3):
     """Вычисляются границы (минимальные и максимальные координаты) всех узлов
     и создаётся супер-треугольник, включающий в себя все узлы"""
 
@@ -42,10 +42,12 @@ def create_super_triangle(nodes, magnification_factor=4):
 def vector_cross_product(vector_1, vector_2):
     return vector_1.x_component * vector_2.y_component - vector_1.y_component * vector_2.x_component
 
+
 # Функция для локализации точки
 def hitting_the_triangle(point, triangles):
 
-    location_list = []    # Если точка попадёт на ребро, то здесь будёт это ребро и два треугольника, которому оно принадлежит
+    location_list = []    # Если точка попадёт на ребро, то здесь будёт храниться
+    # это ребро и два треугольника, которому оно принадлежит
 
     # Проверяю все треугольники из текущей триангуляции, попала ли туда точка
     for triangle in triangles:
@@ -66,40 +68,60 @@ def hitting_the_triangle(point, triangles):
         product_3 = vector_cross_product(vector_3, Vector(vertex_3, vertex_1))
 
         # Проверка, не равно ли какое-то из произведений нулю.
-        # Тогда будет так, что точка попала на границу ребра треугольника, то сохраняется в список это ребро и треугольник
+        # Тогда будет так, что точка попала на границу ребра треугольника.
+        # Сохраняется это ребро и его соседние к нему треугольники
         if product_1 == 0:
-            if len(location_list) == 0:
-                location_list.append(Edge(vertex_1, vertex_2))
-                location_list.append(triangle)
-            else:
-                location_list.append(triangle)
+            now_edge = Edge(vertex_1, vertex_2)
+            for edge in Triangle.edges_list:
+                # Если такое ребро уже есть (а оно должно быть), то использую его
+                if now_edge == edge:
+                    location_list.append(edge)
+                    for triangle_n in edge.triangles:
+                        location_list.append(triangle_n)
+                    break
+                # Если ребро не нашлось в списке, то что-то пошло не так
+                else:
+                    raise ValueError("Ошибка в функции локализации, не определено ребро")
+
+        # Аналогичная проверка для второго
         if product_2 == 0:
-            if len(location_list) == 0:
-                location_list.append(Edge(vertex_2, vertex_3))
-                location_list.append(triangle)
-            else:
-                location_list.append(triangle)
+            now_edge = Edge(vertex_2, vertex_3)
+            for edge in Triangle.edges_list:
+                if now_edge == edge:
+                    location_list.append(edge)
+                    for triangle_n in edge.triangles:
+                        location_list.append(triangle_n)
+                    break
+                else:
+                    raise ValueError("Ошибка в функции локализации, не определено ребро")
 
+        # И для третьего псевдоскалярного произведения
         if product_3 == 0:
-            if len(location_list) == 0:
-                location_list.append(Edge(vertex_3, vertex_1))
-                location_list.append(triangle)
-            else:
-                location_list.append(triangle)
+            now_edge = Edge(vertex_3, vertex_1)
+            for edge in Triangle.edges_list:
+                if now_edge == edge:
+                    location_list.append(edge)
+                    for triangle_n in edge.triangles:
+                        location_list.append(triangle_n)
+                    break
+                else:
+                    raise ValueError("Ошибка в функции локализации, не определено ребро")
 
-
-        # Если знаки у векторных произведений совпадут - это озн., что точка внутри треугольника. Вернётся этот треугольник
+        # Если знаки у векторных произведений совпадут - это означает, что точка внутри треугольника.
         if (product_1 > 0 and product_2 > 0 and product_3 > 0) or (product_1 < 0 and product_2 < 0 and product_3 < 0):
+            # Вернётся этот треугольник
             return triangle
 
-    # Вернётся список с ребром и двумя треугольниками
+    # Если точка попала на ребро, вернётся список с ребром и двумя треугольниками
     return location_list
 
 
-
-
 def delaunay_condition(node1, node2, node3, point):
-    """Проверка выполнения условия Делоне через уравнение описанной окружности"""
+    """
+    Проверка выполнения условия Делоне через уравнение описанной окружности.
+    Точка соседнего треугольника, не принадлежащая рассматриваемому, не должна попадать в окружность.
+    На вход поступает три точки треугольника и одна от соседнего.
+    """
 
     # Координаты точек треугольника
     x1, y1 = node1.x, node1.y
@@ -115,7 +137,6 @@ def delaunay_condition(node1, node2, node3, point):
     #     [x3 ** 2 + y3 ** 2, x3, y3, 1],
     #     [x0 ** 2 + y0 ** 2, x0, y0, 1],
     # ])
-
 
    # Матрицы для вычисления определителей:
     a = np.array([
@@ -147,7 +168,7 @@ def delaunay_condition(node1, node2, node3, point):
     # будет (det_a * (x0 ** 2 + y0 ** 2) - det_b * x0 + det_c * y0 - det_d) * np.sign(det_a) >= 0,
     # т.е. когда (x0, y0) не попадает внутрь окружности, описанной вокруг треугольника
 
-    # вычисление определителей
+    # Вычисление определителей
     det_a = np.linalg.det(a)
     det_b = np.linalg.det(b)
     det_c = np.linalg.det(c)
@@ -156,56 +177,80 @@ def delaunay_condition(node1, node2, node3, point):
     # True - выполняется, False - не выполняется
     return (det_a * (x0 ** 2 + y0 ** 2) - det_b * x0 + det_c * y0 - det_d) * np.sign(det_a) >= 0
 
+
 # Функция для флипа ребра
-def flip_edge(triangle, neighbour_triangle):
+def flip_edge(triangles, triangle, neighbour_triangle, point):
     """
     Если условие Делоне не выполняется, то необходимо осуществить флип ребра.
-    В качестве параметров функция принимает треугольник, окружность которого исследуется,
-    и его соседний треугольник, точка которого попала в окружность.
+    В качестве параметров функция принимает список со всеми треугольниками в триангуляции,
+    треугольник, окружность которого исследуется,
+    соседний треугольник, и точка, которая попала в окружность.
     Формируются два новых треугольника таким образом:
         Исходные треугольники:                     После флипа:
                 C                                      С
                / \                                    /|\
               /   \                                  / | \
              /     \                                /  |  \
-           A ------- B                            A    |    B
-                                                   \   |   /
-                                                    \  |  /
-                                                     \ | /
-                                                      \|/
+           A ------- B                            A    |   \ B
+            \       /                              \   |   /
+             \     /                                \  |  /
+              \   /                                  \ | /
+               \ /                                    \|/
                 D                                      D
     """
 
     # Определение общего ребра треугольника и переданного соседа
     common_edge = None
-    for e1 in triangle.edges:
-        for e2 in neighbour_triangle.edges:
-            if (e1.node1 == e2.node1 and e1.node2 == e2.node2) or (e1.node1 == e2.node2 and e1.node2 == e2.node1):
-                common_edge = e1
+    for edge in triangle.edges:
+        for triangle_neighbour in edge.triangles:
+            if triangle_neighbour == neighbour_triangle:
+                common_edge = edge
                 break
-        if common_edge:
-            break
+        break
 
-    # Если общего ребра нет - исключение
-    if not common_edge:
-        raise ValueError("Нет общего ребра у переданных треугольников.")
+    # Если по каким-то причинам нет общего ребра у переданных треугольников (а оно должно быть),
+    # То оно пересоздаётся
+    if common_edge is None:
+        points = []
+        for p1 in triangle.nodes:
+            for p2 in neighbour_triangle.nodes:
+                if p1 == p2 and len(points) < 2:
+                    points.append(p1)
+        common_edge = Edge(points[0], points[1])
+        if common_edge in Triangle.edges_list:
+            common_edge.triangles.clear()
+        else:
+            Triangle.edges_list.append(common_edge)
+        common_edge.add_triangle(triangle)
+        common_edge.add_triangle(neighbour_triangle)
 
-    A, B = common_edge.node1, common_edge.node2
+    a, b = common_edge.node1, common_edge.node2
 
-    C = next(p for p in triangle.nodes if p != A and p != B)
-    D = next(p for p in neighbour_triangle.nodes if p != A and p != B)
+    c = next(p for p in triangle.nodes if p != a and p != b)
+    d = point
 
-    # Создание новы[ треугольников
-    converted_triangle1 = Triangle(A, C, D)
-    converted_triangle2 = Triangle(B, C, D)
+    # Освобождение рёбер от связи со старыми треугольниками
+    for edge in triangle.edges:
+        edge.delete_triangle(triangle)
+    for edge in neighbour_triangle.edges:
+        edge.delete_triangle(neighbour_triangle)
+
+    # Удаление старых треугольников из триангуляции
+    triangles.remove(triangle)
+    if neighbour_triangle in triangles:
+        triangles.remove(neighbour_triangle)
+
+    # Создание новых треугольников
+    converted_triangle1 = Triangle(a, c, d)
+    converted_triangle2 = Triangle(b, c, d)
 
     # Установка соседей для новых треугольников
-    converted_triangle1.set_neighbor(Edge(A, C), triangle.get_neighbor(Edge(A, C)))
-    converted_triangle1.set_neighbor(Edge(C, D), converted_triangle2)
-    converted_triangle1.set_neighbor(Edge(D, A), neighbour_triangle.get_neighbor(Edge(D, A)))
+    for new_triangle in [converted_triangle1, converted_triangle2]:
+        for edge in new_triangle.edges:
+            for triangle_neighbour in edge.triangles:
+                if (triangle_neighbour != new_triangle and triangle_neighbour not in new_triangle.neighboring_triangles
+                        and len(new_triangle.neighboring_triangles) < 3):
+                    new_triangle.add_neighbour(triangle_neighbour)
 
-    converted_triangle2.set_neighbor(Edge(B, C), triangle.get_neighbor(Edge(B, C)))
-    converted_triangle2.set_neighbor(Edge(C, D), converted_triangle1)
-    converted_triangle2.set_neighbor(Edge(D, B), neighbour_triangle.get_neighbor(Edge(D, B)))
-
-    return converted_triangle1, converted_triangle2
+    # Вставка новых треугольников в триангуляцию
+    triangles.extend([converted_triangle1, converted_triangle2])

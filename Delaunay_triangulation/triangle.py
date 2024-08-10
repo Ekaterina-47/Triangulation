@@ -39,12 +39,13 @@ class Triangle:
         Triangle.edges_list.append(new_edge)
         return new_edge
 
-
     # Добавление соседних треугольников
     def add_neighbour(self, *triangles):
         if len(triangles) < 1 or len(triangles) > 3:
             raise ValueError("Функция должна принимать от 1 до 3 треугольников")
         for triangle in triangles:
+            if triangle in self.neighboring_triangles:
+                continue
             if len(self.neighboring_triangles) < 3:
                 self.neighboring_triangles.append(triangle)
             else:

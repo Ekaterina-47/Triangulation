@@ -16,8 +16,8 @@ class Edge:
             self.triangles.append(triangle)
 
     def delete_triangle(self, triangle):
-        self.triangles.remove(triangle)
-
+        if triangle in self.triangles:
+            self.triangles.remove(triangle)
 
     # Для сравнения с помощью "==" рёбер у разных треугольников. Рёбра могут быть сохранены в разных участках памяти
     def __eq__(self, other):
