@@ -254,3 +254,26 @@ def flip_edge(triangles, triangle, neighbour_triangle, point):
 
     # Вставка новых треугольников в триангуляцию
     triangles.extend([converted_triangle1, converted_triangle2])
+
+
+# Функция для повторного исправления получившейся триангуляции
+def final_triangles_flip(triangles):
+    correct = False
+    while not correct:
+        count = 0
+        for triangle in triangles:
+            for neighbour in triangle.neighboring_triangles:
+                for point in neighbour.nodes:
+                    if point not in triangle.nodes:
+                        if delaunay_condition(triangle.nodes[0], triangle.nodes[1], triangle.nodes[2], point):
+                            continue
+                        else:
+                            count += 1
+                            flip_edge(triangles, triangle, neighbour, point)
+                            break
+                    break
+        print("Некорректных: {}".format(count))
+        if count < 1:
+            correct = True
+
+    return triangles

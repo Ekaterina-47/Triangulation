@@ -5,7 +5,7 @@ import random
 from node import Node
 from edge import Edge
 from triangle import Triangle
-from ulits import create_super_triangle, delaunay_condition, hitting_the_triangle, flip_edge
+from ulits import create_super_triangle, delaunay_condition, hitting_the_triangle, flip_edge, final_triangles_flip
 
 
 def plot_initial_points(nodes):
@@ -58,7 +58,8 @@ def delaunay_triangulation(nodes):
     # Шаг 1: Инициализация. Создание начальной триангуляции с помощью треугольника, охватывающего все точки
     super_triangle = create_super_triangle(nodes)
     triangles = [super_triangle]     # начальная триангуляция (список треугольников) содержит объект супертреугольника
-    plot_triangulation(triangles, "Проверка созданной суперструктуры")
+    # Просмотр графика с созданной суперструктурой
+    # plot_triangulation(triangles, "Проверка созданной суперструктуры")
 
     print("Супертреугольник: {}".format(super_triangle))
     print("Начальная триангуляция: {}".format(triangles))
@@ -130,8 +131,6 @@ def delaunay_triangulation(nodes):
                             new_triangle.add_neighbour(triangle_neighbour)
 
             triangles.extend(triangle_list)
- #           plot_triangulation(triangles, "Вставка новых треугольников")
-
 
             # Проверка условия Делоне для каждого нового треугольника и точки соседнего треугольника
             for triangle in triangle_list:
@@ -148,25 +147,19 @@ def delaunay_triangulation(nodes):
                     break
 #            plot_triangulation(triangles, "Результат после проверки")
 
-
-
-
             # После проверки условия Делоне и преобразований новые треугольники вставляются в триангуляцию
             triangles.extend([new_triangle1, new_triangle2])
             if new_triangle3 and new_triangle4:
                 triangles.extend([new_triangle3, new_triangle4])
 
-
         # Если узел попадает внутрь треугольника
         if isinstance(point_localization, Triangle):
-#            print("Точка попала внутрь треугольника")
+            #   print("Точка попала внутрь треугольника")
             triangle = point_localization
- #           plot_triangulation(triangles, "Точка попала внутрь треугольника")
 
             # Надо сразу удалить этот треугольник из триангуляции и освободить рёбра от связи с ним
             # Удаление старого треугольника
             triangles.remove(triangle)
- #           plot_triangulation(triangles, "Удалён старый треугольник, который разделён на 3")
             # Удаление этого треугольника у всех его рёбер
             for edge in triangle.edges:
                 edge.delete_triangle(triangle)
@@ -185,7 +178,6 @@ def delaunay_triangulation(nodes):
 
             # Вставка новых треугольников в триангуляцию
             triangles.extend([new_triangle1, new_triangle2, new_triangle3])
- #           plot_triangulation(triangles, "Установка трёх новых треугольников")
 
             # Проверка условия Делоне для каждого нового треугольника и точки соседнего треугольника
             for triangle in [new_triangle1, new_triangle2, new_triangle3]:
@@ -200,37 +192,33 @@ def delaunay_triangulation(nodes):
                                 flip_edge(triangles, triangle, neighbour, point)
                                 break
                     break
- #           plot_triangulation(triangles, "Результат после проверки")
 
-    plot_triangulation(triangles, "Итоговая триангуляция с суперструктурой")
+    # Просмотр получившейся триангуляции с суперструктурой
+    plot_triangulation(triangles, "Получившаяся триангуляция с суперструктурой")
+
     # Шаг 3: Удалить треугольники, которые содержат узлы супертреугольника, чтобы они не оказались в финальной триангуляции
-    total_triangles = [triangle for triangle in triangles if not any(node in super_triangle.nodes for node in triangle.nodes)]
+    triangles = [triangle for triangle in triangles if not any(node in super_triangle.nodes for node in triangle.nodes)]
 
-    # Дополнительная коррекция итоговой триангуляции
-    correct = 1
-    while (correct != 0):
-        correct = 1
-        for triangle in triangles:
-            for neighbour in triangle.neighboring_triangles:
-                for point in neighbour.nodes:
-                    if point not in triangle.nodes:
-                        if delaunay_condition(triangle.nodes[0], triangle.nodes[1], triangle.nodes[2], point):
-                            continue
-                        else:
-                            correct += 1
-                            print("Не выполняется условие Делоне")
-                            flip_edge(triangles, triangle, neighbour, point)
-                            break
-                break
-        correct -= 1
+    # Дополнительная коррекция получившейся триангуляции.
+    # Поиск и перестройка треугольников, для которых не выполняется условие Делоне.
+    # Проводится до тех пор, пока такие присутствуют в триангуляции.
 
+    plot_triangulation(triangles, "Триангуляция после удаления суперструктуры")
+
+    # Коррекция триангуляции (на случай, если остались треугольники, где не выполняется условие Делоне)
+    final_triangles_flip(triangles)
 
     # Шаг 4: Вернуть список треугольников, представляющих финальную триангуляцию
-    return total_triangles
+    return triangles
 
 
 # Использование алгоритма
 def generate_random_points(num_points, x_range, y_range):
+    """
+    Генерация случайных точек на плоскости.
+    В качестве параметров: количество точек,
+    диапазон по OX, диапазон по OY.
+    """
 
     points = []
     for _ in range(num_points):
@@ -239,20 +227,58 @@ def generate_random_points(num_points, x_range, y_range):
         points.append(Node(x, y))
     return points
 
+
 # Тестирование
 num_points = 100
 x_range = (-10, 10)
 y_range = (-10, 10)
 random_points = generate_random_points(num_points, x_range, y_range)
 
+# Просмотр графика с заданными точками
 plot_initial_points(random_points)
 print(random_points)
 
-
+# Запуск алгоритма
 triangles = delaunay_triangulation(random_points)
 
+# Вывод информации о количестве треугольников и просмотр графика с триангуляцией
 print("Количество итоговых треугольников: {}".format(len(triangles)))
-# print("\n Треугольники в финальной триангуляции:\n{}".format(triangles))
 plot_triangulation(triangles, "Финальная триангуляция")
+
+# print("\n Треугольники в финальной триангуляции:\n{}".format(triangles))
+
+
+# Тестовая проверка условия Делоне. Если остались треугольники, где не выполняется, выведет количество.
+count = 0
+for triangle in triangles:
+    for neighbour in triangle.neighboring_triangles:
+        for point in neighbour.nodes:
+            if point not in triangle.nodes:
+                if delaunay_condition(triangle.nodes[0], triangle.nodes[1], triangle.nodes[2], point):
+                    continue
+                else:
+                    count += 1
+                    flip_edge(triangles, triangle, neighbour, point)
+                    break
+        break
+
+print("Количество некорректных треугольников в окончательной триангуляции: {}".format(count))
+
+# Тестовая проверка условия Делоне. Если остались треугольники, где не выполняется, выведет количество.
+count = 0
+for triangle in triangles:
+    for neighbour in triangle.neighboring_triangles:
+        for point in neighbour.nodes:
+            if point not in triangle.nodes:
+                if delaunay_condition(triangle.nodes[0], triangle.nodes[1], triangle.nodes[2], point):
+                    continue
+                else:
+                    count += 1
+                    break
+        break
+
+print("Количество некорректных треугольников в окончательной триангуляции: {}".format(count))
+
+plot_triangulation(triangles, "Финальная триангуляция после коррекции")
 
 
