@@ -61,12 +61,20 @@ int main()
     // Вывод всех возможных отрезков триангуляции
     cout << "All segments:" << endl;
     triangulation.printSegments();
+    cout << endl;
 
     // Выполнение триангуляции
+    triangulation.makeTriangulation();
 
     // Получение отрезков триангуляции
+    vector<Segment> triangulationSegments = triangulation.getTriangulation();
 
     // Вывод отрезков триангуляции
+    cout << "Greedy triangulation segments:" << endl;
 
+    for (int i = 0; i < triangulationSegments.size(); i++) {
+        triangulationSegments[i].printSegment();
+        cout << endl;
+    }
 }
 
