@@ -1,33 +1,41 @@
 #include "Segment.h"
+#include <iostream>
 #include <cmath>
 
 using namespace std;
 
-// Реализация конструктора и методов для класса Segment
+// Р РµР°Р»РёР·Р°С†РёСЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° Рё РјРµС‚РѕРґРѕРІ РґР»СЏ РєР»Р°СЃСЃР° Segment
 
 
-// Конструктор
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
 Segment::Segment(const Point& start, const Point& end) : start(start), end(end) {}
 
 
 
-// Получить начало отрезка
+// РџРѕР»СѓС‡РёС‚СЊ РЅР°С‡Р°Р»Рѕ РѕС‚СЂРµР·РєР°
 Point Segment::getStart() const{
 	return start;
 }
 
-// Получить конец отрезка
+// РџРѕР»СѓС‡РёС‚СЊ РєРѕРЅРµС† РѕС‚СЂРµР·РєР°
 Point Segment::getEnd() const {
 	return end;
 }
 
-// Вычисление длинны отрезка
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РґР»РёРЅРЅС‹ РѕС‚СЂРµР·РєР°
 double Segment::getLength() const {
 	return start.distance(end);
 }
 
+// Р’С‹РІРѕРґ РѕС‚СЂРµР·РєР°
+void Segment::printSegment() const {
+	start.print();
+	cout << "--";
+	end.print();
+}
 
-// Проверка на пересечение с другим отрезком
+
+// РџСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµСЃРµС‡РµРЅРёРµ СЃ РґСЂСѓРіРёРј РѕС‚СЂРµР·РєРѕРј
 	bool Segment::intersection(const Segment & other) const {
 		double x1 = start.getX(), y1 = start.getY();
 		double x2 = end.getX(), y2 = end.getY();
@@ -37,13 +45,13 @@ double Segment::getLength() const {
 		double denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
 
 		if (denominator == 0) {
-			return false;        // Отрезки параллельны или коллинеарны
+			return false;        // РћС‚СЂРµР·РєРё РїР°СЂР°Р»Р»РµР»СЊРЅС‹ РёР»Рё РєРѕР»Р»РёРЅРµР°СЂРЅС‹
 		}
 
 		double t_a = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
 		double t_b = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
 
-		// Проверка на пересечение отрезков внутри своих границ
+		// РџСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµСЃРµС‡РµРЅРёРµ РѕС‚СЂРµР·РєРѕРІ РІРЅСѓС‚СЂРё СЃРІРѕРёС… РіСЂР°РЅРёС†
 		if (0 < t_a && t_a < 1 && 0 < t_b && t_b < 1) {
 			return true;
 		}
