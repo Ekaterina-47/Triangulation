@@ -48,13 +48,26 @@ void Triangulation::printSegments() const {
 
 
 // Выполнение триангуляции
-//void Triangulation::makeTriangulation() {
-	//
-//}
+void Triangulation::makeTriangulation() {
+	triangulation.push_back(segments[0]);  // Самый маленький отрезок помещается в список
+	// Далее последовательная вставка отрезков в триангуляцию, если нет пересечений. Иначе, они отбрасываются.
+	for (int i = 1; i < segments.size(); i++) {
+		int iter = 0;   // переменная для отслеживания итерация по отрезкам триангуляции
+		for (int j = 0; j < triangulation.size(); j++) {
+			iter++;
+			if (segments[i].intersection(triangulation[j]) == true) {
+				break;
+			}
+		}
+		// Если после всех итераций по отрезкам в триангуляции не возникло пересечения, то отрезок вставляется
+		if (iter == triangulation.size()) {
+			triangulation.push_back(segments[i]);
+		}
+	}
+}
 
 // Получение триангуляции
-//vector<Segment> Triangulation::getTriangulation() {
-	//
-//	return;
-//}
+vector<Segment> Triangulation::getTriangulation() {
+	return triangulation;
+}
 
