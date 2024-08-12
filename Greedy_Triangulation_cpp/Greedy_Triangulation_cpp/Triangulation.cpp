@@ -2,20 +2,37 @@
 
 using namespace std;
 
-// Реализация конструктора и методов для класса Триангуляция
+// Р РµР°Р»РёР·Р°С†РёСЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° Рё РјРµС‚РѕРґРѕРІ РґР»СЏ РєР»Р°СЃСЃР° РўСЂРёР°РЅРіСѓР»СЏС†РёСЏ
 
 
-// Реализация конструктора
+// Р РµР°Р»РёР·Р°С†РёСЏ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°
+Triangulation::Triangulation(const vector<Point>& points) : points(points) {}
 
 
-// Генерация отрезков
+
+// Р“РµРЅРµСЂР°С†РёСЏ РѕС‚СЂРµР·РєРѕРІ
+void Triangulation::genSegments() {
+	for (int i = 0; i < points.size(); i++) {
+		for (int j = i + 1; j < points.size(); j++) {
+			segments.emplace_back(points[i], points[j]);
+		}
+	}
+}
 
 
-// Метод для сортировки
+// РњРµС‚РѕРґ РґР»СЏ СЃРѕСЂС‚РёСЂРѕРІРєРё
+void Triangulation::sortSegments() {
+	//
+}
 
 
-// Выполнение триангуляции
+// Р’С‹РїРѕР»РЅРµРЅРёРµ С‚СЂРёР°РЅРіСѓР»СЏС†РёРё
+void Triangulation::makeTriangulation() {
+	//
+}
 
-
-// Получение триангуляции
+// РџРѕР»СѓС‡РµРЅРёРµ С‚СЂРёР°РЅРіСѓР»СЏС†РёРё
+vector<Segment> Triangulation::getTriangulation() {
+	//
+}
 
