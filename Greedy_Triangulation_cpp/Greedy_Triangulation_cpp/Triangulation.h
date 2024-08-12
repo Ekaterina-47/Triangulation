@@ -9,23 +9,24 @@ using namespace std;
 class Triangulation {
 
 private:
-	vector<Point> point;             // Список точек
-	vector<Segment> segment;         // Список отрезков
-	vector<Segment> triangulation;   // Список итоговых отрезков триангуляции
-
-	// Генерация всех возможных отрезков
-	void genSegments();
-
-	// Сортировка отрезков
-	void sortSegments();
+	vector<Point> points;             // РЎРїРёСЃРѕРє С‚РѕС‡РµРє
+	vector<Segment> segments;         // РЎРїРёСЃРѕРє РѕС‚СЂРµР·РєРѕРІ
+	vector<Segment> triangulation;   // РЎРїРёСЃРѕРє РёС‚РѕРіРѕРІС‹С… РѕС‚СЂРµР·РєРѕРІ С‚СЂРёР°РЅРіСѓР»СЏС†РёРё
 
 public:
-	// Конструктор, принимает список точек
+	// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ, РїСЂРёРЅРёРјР°РµС‚ СЃРїРёСЃРѕРє С‚РѕС‡РµРє
 	Triangulation(const vector<Point>& points);
 
-	// Выполнение триангуляции
+	// Р“РµРЅРµСЂР°С†РёСЏ РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… РѕС‚СЂРµР·РєРѕРІ
+	void genSegments();
+
+	// РЎРѕСЂС‚РёСЂРѕРІРєР° РѕС‚СЂРµР·РєРѕРІ
+	void sortSegments();
+
+	// Р’С‹РїРѕР»РЅРµРЅРёРµ С‚СЂРёР°РЅРіСѓР»СЏС†РёРё
 	void makeTriangulation();
 
-	// Получение отрезков триангуляции
-	vector<Segment> getTriangulation() const;
+	// РџРѕР»СѓС‡РµРЅРёРµ РѕС‚СЂРµР·РєРѕРІ С‚СЂРёР°РЅРіСѓР»СЏС†РёРё
+	vector<Segment> getTriangulation();
+
 };
