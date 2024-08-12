@@ -29,9 +29,9 @@ public:
 
 
 	// Выполнение триангуляции
-	//void makeTriangulation();
+	void makeTriangulation();
 
 	// Получение отрезков триангуляции
-	//vector<Segment> getTriangulation();
+	vector<Segment> getTriangulation();
 
 };
