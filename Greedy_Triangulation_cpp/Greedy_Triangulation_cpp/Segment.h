@@ -4,7 +4,7 @@
 using namespace std;
 
 
-// Объявление класса для отрезков
+// РћР±СЉСЏРІР»РµРЅРёРµ РєР»Р°СЃСЃР° РґР»СЏ РѕС‚СЂРµР·РєРѕРІ
 class Segment {
 
 private:
@@ -15,14 +15,17 @@ private:
 
 public:
 
-	// Конструктор для отрезка
+	// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РґР»СЏ РѕС‚СЂРµР·РєР°
 	Segment(const Point& start, const Point& end);
 
-	// Методы
+	// РњРµС‚РѕРґС‹
 
-	Point getStart() const;      // Получить начальную точку
-	Point getEnd() const;        // Получить конечную точку
+	Point getStart() const;      // РџРѕР»СѓС‡РёС‚СЊ РЅР°С‡Р°Р»СЊРЅСѓСЋ С‚РѕС‡РєСѓ
+	Point getEnd() const;        // РџРѕР»СѓС‡РёС‚СЊ РєРѕРЅРµС‡РЅСѓСЋ С‚РѕС‡РєСѓ
 
-	double getLength() const;                        // Вычисление длинны отрезка
-	bool intersection(const Segment& other) const;   // Проверка на пересечение с другим отрезком
+	void printSegment() const;          // Р’С‹РІРѕРґ РѕС‚СЂРµР·РєР°
+
+
+	double getLength() const;                        // Р’С‹С‡РёСЃР»РµРЅРёРµ РґР»РёРЅРЅС‹ РѕС‚СЂРµР·РєР°
+	bool intersection(const Segment& other) const;   // РџСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµСЃРµС‡РµРЅРёРµ СЃ РґСЂСѓРіРёРј РѕС‚СЂРµР·РєРѕРј
 };
